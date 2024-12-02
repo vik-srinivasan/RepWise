@@ -4,17 +4,26 @@ import WorkoutListScreen from '../components/workouts/WorkoutListScreen';
 import WorkoutEntryScreen from '../components/workouts/WorkoutEntryScreen';
 
 export type WorkoutStackParamList = {
-  WorkoutList: undefined;
-  WorkoutEntry: undefined;
-};
+    WorkoutList: undefined;
+    WorkoutEntry: undefined;
+  };
 
 const Stack = createNativeStackNavigator<WorkoutStackParamList>();
 
 export default function WorkoutStackNavigator() {
   return (
-    <Stack.Navigator initialRouteName="WorkoutList">
-      <Stack.Screen name="WorkoutList" component={WorkoutListScreen} options={{ title: 'My Workouts' }} />
-      <Stack.Screen name="WorkoutEntry" component={WorkoutEntryScreen} options={{ title: 'New Workout' }} />
+    <Stack.Navigator
+      initialRouteName="WorkoutList"
+      screenOptions={{ headerShown: false }}
+    >
+      <Stack.Screen
+        name="WorkoutList"
+        component={WorkoutListScreen}
+      />
+      <Stack.Screen
+        name="WorkoutEntry"
+        component={WorkoutEntryScreen}
+      />
     </Stack.Navigator>
   );
 }
