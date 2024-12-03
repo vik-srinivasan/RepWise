@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  StyleSheet,
+} from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
+import colors from '../../styles/colors';
 
 export default function SignUpScreen({ navigation }: { navigation: any }) {
   const { signUp } = useAuth();
@@ -14,13 +22,14 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
     if (error) {
       setError(error.message);
     } else {
-      // Optionally navigate to a confirmation screen
+      Alert.alert('Welcome!', 'Account created successfully.');
+      navigation.navigate('Login');
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text>Sign Up</Text>
+      <Text style={styles.title}>Sign Up</Text>
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <TextInput
         placeholder="Email"
@@ -29,6 +38,7 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
         autoCapitalize="none"
         style={styles.input}
         keyboardType="email-address"
+        placeholderTextColor={colors.navy}
       />
       <TextInput
         placeholder="Password"
@@ -36,10 +46,13 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
         onChangeText={setPassword}
         secureTextEntry
         style={styles.input}
+        placeholderTextColor={colors.navy}
       />
-      <Button title="Sign Up" onPress={handleSignUp} />
+      <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+        <Text style={styles.buttonText}>Sign Up</Text>
+      </TouchableOpacity>
       <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
-        Already have an account? Log in
+        Already have an account? <Text style={styles.linkText}>Log in</Text>
       </Text>
     </View>
   );
@@ -48,18 +61,50 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'center',
     padding: 16,
+    backgroundColor: colors.offWhite,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.darkNavy,
+    textAlign: 'center',
+    marginBottom: 24,
   },
   error: {
     color: 'red',
+    textAlign: 'center',
+    marginBottom: 12,
   },
   input: {
+    backgroundColor: colors.lightBlue,
     marginVertical: 8,
-    padding: 8,
-    borderWidth: 1,
+    padding: 12,
+    borderRadius: 6,
+    fontSize: 16,
+    color: colors.darkNavy,
+  },
+  button: {
+    backgroundColor: colors.navy,
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  buttonText: {
+    color: colors.offWhite,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   link: {
-    color: 'blue',
+    textAlign: 'center',
     marginTop: 16,
+    fontSize: 16,
+    color: colors.navy,
+  },
+  linkText: {
+    color: colors.lighterNavy,
+    fontWeight: 'bold',
   },
 });

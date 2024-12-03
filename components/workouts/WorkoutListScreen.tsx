@@ -11,6 +11,7 @@ import { WorkoutStackParamList } from '../../navigation/WorkoutStackNavigator';
 import { useNavigation } from '@react-navigation/native';
 import colors from '../../styles/colors';
 import { supabase } from '../../services/supabaseClient';
+import { useAuth } from '../../contexts/AuthContext';
 
 type WorkoutListScreenNavigationProp = NativeStackNavigationProp<
   WorkoutStackParamList,
@@ -19,33 +20,38 @@ type WorkoutListScreenNavigationProp = NativeStackNavigationProp<
 
 export default function WorkoutListScreen() {
   const navigation = useNavigation<WorkoutListScreenNavigationProp>();
+  const { user } = useAuth(); // Fetch authenticated user
   const [workouts, setWorkouts] = useState<any[]>([]);
 
   useEffect(() => {
-    // Fetch workouts from Supabase
+    if (!user) return;
+
+    // Fetch workouts for the current user
     const fetchWorkouts = async () => {
       const { data, error } = await supabase
         .from('workouts')
         .select('*')
+        .eq('user_id', user.id) // Filter by user_id
         .order('date', { ascending: false });
+
       if (error) {
         console.error(error);
       } else {
-        setWorkouts(data);
+        setWorkouts(data || []);
       }
     };
 
     fetchWorkouts();
-  }, []);
+  }, [user]);
 
   const renderItem = ({ item }: { item: any }) => (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>{item.type}</Text>
+      <Text style={styles.cardText}>Duration: {item.duration} minutes</Text>
       <Text style={styles.cardText}>
-        Duration: {item.duration} minutes
-      </Text>
-      <Text style={styles.cardText}>
-        Sets: {item.sets}, Reps: {item.reps}
+        {item.sets && item.reps
+          ? `Sets: ${item.sets}, Reps: ${item.reps}`
+          : 'No sets/reps recorded'}
       </Text>
       <Text style={styles.cardDate}>
         {new Date(item.date).toLocaleDateString()}
@@ -55,7 +61,6 @@ export default function WorkoutListScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Custom Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>My Workouts</Text>
       </View>
@@ -79,7 +84,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.offWhite,
-    padding: 16,
   },
   header: {
     backgroundColor: colors.lighterNavy,

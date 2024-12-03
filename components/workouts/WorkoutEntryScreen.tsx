@@ -14,16 +14,16 @@ import { WorkoutStackParamList } from '../../navigation/WorkoutStackNavigator';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../../styles/colors';
 import { supabase } from '../../services/supabaseClient';
+import { useAuth } from '../../contexts/AuthContext';
 
-// Correctly define navigation prop types
 type WorkoutEntryNavigationProp = CompositeNavigationProp<
   NativeStackNavigationProp<WorkoutStackParamList, 'WorkoutEntry'>,
   NativeStackNavigationProp<MainTabParamList>
 >;
 
 export default function WorkoutEntryScreen() {
-  const navigation = useNavigation<WorkoutEntryNavigationProp>(); // Explicitly typed
-
+  const navigation = useNavigation<WorkoutEntryNavigationProp>();
+  const { user } = useAuth(); // Fetch authenticated user
   const [type, setType] = useState('');
   const [duration, setDuration] = useState('');
   const [sets, setSets] = useState('');
@@ -35,14 +35,26 @@ export default function WorkoutEntryScreen() {
       return;
     }
 
+    if (!user) {
+      Alert.alert('Error', 'No authenticated user found.');
+      return;
+    }
+
+    // Insert workout data into Supabase
     const { error } = await supabase.from('workouts').insert([
-      { type, duration: Number(duration), sets: Number(sets), reps: Number(reps) },
+      {
+        user_id: user.id, // Associate workout with the authenticated user
+        type,
+        duration: Number(duration),
+        sets: sets ? Number(sets) : null,
+        reps: reps ? Number(reps) : null,
+      },
     ]);
 
     if (error) {
       Alert.alert('Error', error.message);
     } else {
-      navigation.navigate('Workouts', { screen: 'WorkoutList' }); // Correctly typed navigation
+      navigation.navigate('Workouts', { screen: 'WorkoutList' }); // Navigate back to WorkoutList
     }
   };
 
@@ -71,14 +83,14 @@ export default function WorkoutEntryScreen() {
         style={styles.input}
       />
       <TextInput
-        placeholder="Sets"
+        placeholder="Sets (optional)"
         value={sets}
         onChangeText={setSets}
         keyboardType="numeric"
         style={styles.input}
       />
       <TextInput
-        placeholder="Reps"
+        placeholder="Reps (optional)"
         value={reps}
         onChangeText={setReps}
         keyboardType="numeric"

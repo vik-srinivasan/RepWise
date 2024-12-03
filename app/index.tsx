@@ -5,7 +5,7 @@ import AppNavigator from '../navigation/AppNavigator';
 export default function App() {
   return (
     <AuthProvider>
-      <AppNavigator />
+      <AppNavigator/>
     </AuthProvider>
   );
 }

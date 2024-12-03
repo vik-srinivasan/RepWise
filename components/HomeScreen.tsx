@@ -32,7 +32,7 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
       </View>
       <View style={styles.motivationalQuote}>
         <Text style={styles.quoteText}>
-          "The only bad workout is the one that didn't happen."
+          "The secret of getting ahead is getting started."
         </Text>
       </View>
       <TouchableOpacity onPress={signOut}>
