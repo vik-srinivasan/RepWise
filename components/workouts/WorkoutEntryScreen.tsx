@@ -114,14 +114,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.lighterNavy,
     padding: 20,
+    marginBottom: 12,
   },
   backButton: {
     marginRight: 10,
   },
   headerText: {
-    fontSize: 20,
+    fontSize: 24,
     color: colors.offWhite,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   input: {
     backgroundColor: colors.lightBlue,

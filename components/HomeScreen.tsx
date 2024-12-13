@@ -51,11 +51,13 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.lighterNavy,
     padding: 20,
+    alignItems: 'center',
   },
   headerText: {
     color: colors.offWhite,
     fontSize: 24,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   quickActions: {
     marginTop: 30,
