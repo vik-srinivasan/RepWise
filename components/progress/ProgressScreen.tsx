@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { LineChart } from 'react-native-chart-kit';
 import colors from '../../styles/colors';
 import { supabase } from '../../services/supabaseClient';
@@ -17,36 +18,34 @@ export default function ProgressScreen() {
   const [selectedExercise, setSelectedExercise] = useState('');
   const screenWidth = Dimensions.get('window').width;
 
-  useEffect(() => {
-    const fetchWorkoutData = async () => {
-      const { data, error } = await supabase
-        .from('exercises')
-        .select('type, set_number, reps, weight, duration, workout_id')
-        .order('workout_id', { ascending: true })
-        .order('set_number', { ascending: true });
+  const fetchWorkoutData = async () => {
+    const { data, error } = await supabase
+      .from('exercises')
+      .select('type, set_number, reps, weight, duration, workout_id')
+      .order('workout_id', { ascending: true })
+      .order('set_number', { ascending: true });
 
-      if (error) {
-        console.error(error);
-      } else {
-        setWorkoutData(data);
-        if (data.length > 0) {
-          setSelectedExercise(data[0].type); // Set default exercise
-        }
+    if (error) {
+      console.error(error);
+    } else {
+      setWorkoutData(data);
+      if (data.length > 0) {
+        setSelectedExercise(data[0].type); // Set default exercise
       }
-    };
+    }
+  };
 
-    fetchWorkoutData();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchWorkoutData(); // Fetch data whenever the screen is focused
+    }, [])
+  );
 
-  // Get unique exercise types
   const exerciseTypes = Array.from(new Set(workoutData.map((w) => w.type)));
-
-  // Filter data for the selected exercise
   const filteredData = workoutData.filter(
     (exercise) => exercise.type === selectedExercise
   );
 
-  // Function to generate chart data for weight/reps/duration
   const lineChartData = (key: 'weight' | 'reps' | 'duration') => {
     if (filteredData.length === 0) {
       return {
@@ -59,21 +58,21 @@ export default function ProgressScreen() {
         ],
       };
     }
-  
+
     return {
       labels: filteredData.map((exercise) => `Set ${exercise.set_number}`),
       datasets: [
         {
           data: filteredData.map((exercise) => {
             const value = exercise[key];
-            return value !== null && value !== undefined ? value : 0; // Fallback to 0 for invalid values
+            return value !== null && value !== undefined ? value : 0;
           }),
           color: () => colors.navy,
         },
       ],
     };
   };
-  
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
@@ -110,11 +109,20 @@ export default function ProgressScreen() {
       {/* Weight Over Time */}
       <View style={styles.chartContainer}>
         <Text style={styles.chartTitle}>Weight Over Time</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator style={styles.scrollableChartContainer}>
-          <View style={[styles.chartBackground, { width: Math.max(screenWidth, filteredData.length * 100) }]}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator
+          style={styles.scrollableChartContainer}
+        >
+          <View
+            style={[
+              styles.chartBackground,
+              { width: Math.max(screenWidth, filteredData.length * 100) },
+            ]}
+          >
             <LineChart
               data={lineChartData('weight')}
-              width={Math.max(screenWidth, filteredData.length * 100)} // Dynamically scale width
+              width={Math.max(screenWidth, filteredData.length * 100)}
               height={220}
               chartConfig={chartConfig}
               bezier
@@ -127,8 +135,17 @@ export default function ProgressScreen() {
       {/* Reps Over Time */}
       <View style={styles.chartContainer}>
         <Text style={styles.chartTitle}>Reps Over Time</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator style={styles.scrollableChartContainer}>
-          <View style={[styles.chartBackground, { width: Math.max(screenWidth, filteredData.length * 100) }]}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator
+          style={styles.scrollableChartContainer}
+        >
+          <View
+            style={[
+              styles.chartBackground,
+              { width: Math.max(screenWidth, filteredData.length * 100) },
+            ]}
+          >
             <LineChart
               data={lineChartData('reps')}
               width={Math.max(screenWidth, filteredData.length * 100)}
@@ -144,8 +161,17 @@ export default function ProgressScreen() {
       {/* Duration Over Time */}
       <View style={styles.chartContainer}>
         <Text style={styles.chartTitle}>Duration Over Time</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator style={styles.scrollableChartContainer}>
-          <View style={[styles.chartBackground, { width: Math.max(screenWidth, filteredData.length * 100) }]}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator
+          style={styles.scrollableChartContainer}
+        >
+          <View
+            style={[
+              styles.chartBackground,
+              { width: Math.max(screenWidth, filteredData.length * 100) },
+            ]}
+          >
             <LineChart
               data={lineChartData('duration')}
               width={Math.max(screenWidth, filteredData.length * 100)}
@@ -184,6 +210,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.lighterNavy,
     padding: 20,
     alignItems: 'center',
+    borderRadius: 8,
   },
   headerText: {
     color: colors.offWhite,
@@ -231,7 +258,7 @@ const styles = StyleSheet.create({
     borderRadius: 8, // Matches the chart's rounded corners
   },
   chartBackground: {
-    backgroundColor: colors.lightBlue, // Ensures consistent background behind the chart
+    backgroundColor: colors.offWhite, // Ensures consistent background behind the chart
     justifyContent: 'center',
     borderRadius: 8, // Matches the chart container's border radius
   },

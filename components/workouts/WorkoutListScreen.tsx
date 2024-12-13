@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { WorkoutStackParamList } from '../../navigation/WorkoutStackNavigator';
 import { useNavigation } from '@react-navigation/native';
@@ -23,54 +24,54 @@ export default function WorkoutListScreen() {
   const { user } = useAuth();
   const [workouts, setWorkouts] = useState<any[]>([]);
 
-  useEffect(() => {
+  const fetchWorkouts = async () => {
     if (!user) return;
+    const { data, error } = await supabase
+      .from('workouts')
+      .select('id, name, date, exercises(id, type, set_number, reps, weight, duration)')
+      .eq('user_id', user.id)
+      .order('date', { ascending: false });
 
-    const fetchWorkouts = async () => {
-      const { data, error } = await supabase
-        .from('workouts')
-        .select('id, name, date, exercises(id, type, set_number, reps, weight, duration)')
-        .eq('user_id', user.id)
-        .order('date', { ascending: false });
+    if (error) {
+      console.error(error);
+    } else {
+      const groupedWorkouts = data.map((workout: any) => ({
+        ...workout,
+        exercises: workout.exercises.reduce((grouped: any[], exercise: any) => {
+          const existingExercise = grouped.find((e: any) => e.type === exercise.type);
+          if (existingExercise) {
+            existingExercise.sets.push({
+              set_number: exercise.set_number,
+              reps: exercise.reps,
+              weight: exercise.weight,
+              duration: exercise.duration,
+            });
+          } else {
+            grouped.push({
+              type: exercise.type,
+              sets: [
+                {
+                  set_number: exercise.set_number,
+                  reps: exercise.reps,
+                  weight: exercise.weight,
+                  duration: exercise.duration,
+                },
+              ],
+            });
+          }
+          return grouped;
+        }, []),
+      }));
 
-      if (error) {
-        console.error(error);
-      } else {
-        // Group exercises by type
-        const groupedWorkouts = data.map((workout: any) => ({
-          ...workout,
-          exercises: workout.exercises.reduce((grouped: any[], exercise: any) => {
-            const existingExercise = grouped.find((e: any) => e.type === exercise.type);
-            if (existingExercise) {
-              existingExercise.sets.push({
-                set_number: exercise.set_number,
-                reps: exercise.reps,
-                weight: exercise.weight,
-                duration: exercise.duration,
-              });
-            } else {
-              grouped.push({
-                type: exercise.type,
-                sets: [
-                  {
-                    set_number: exercise.set_number,
-                    reps: exercise.reps,
-                    weight: exercise.weight,
-                    duration: exercise.duration,
-                  },
-                ],
-              });
-            }
-            return grouped;
-          }, []),
-        }));
+      setWorkouts(groupedWorkouts);
+    }
+  };
 
-        setWorkouts(groupedWorkouts);
-      }
-    };
-
-    fetchWorkouts();
-  }, [user]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchWorkouts(); // Fetch data whenever the screen is focused
+    }, [user])
+  );
 
   const renderItem = ({ item }: { item: any }) => (
     <View style={styles.card}>
@@ -116,6 +117,7 @@ export default function WorkoutListScreen() {
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -126,6 +128,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.lighterNavy,
     padding: 20,
     alignItems: 'center',
+    borderRadius: 8,
   },
   headerText: {
     color: colors.offWhite,
