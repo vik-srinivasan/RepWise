@@ -5,7 +5,8 @@ import WorkoutEntryScreen from '../components/workouts/WorkoutEntryScreen';
 
 export type WorkoutStackParamList = {
     WorkoutList: undefined;
-    WorkoutEntry: undefined;
+    WorkoutEntry: { generatedWorkout?: any }; 
+    AIWorkout: undefined;
   };
 
 const Stack = createNativeStackNavigator<WorkoutStackParamList>();

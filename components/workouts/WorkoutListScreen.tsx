@@ -109,7 +109,7 @@ export default function WorkoutListScreen() {
       />
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => navigation.navigate('WorkoutEntry')}
+        onPress={() => navigation.navigate('WorkoutEntry', {})}
       >
         <Text style={styles.fabIcon}>＋</Text>
       </TouchableOpacity>

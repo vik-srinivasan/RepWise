@@ -34,7 +34,7 @@ export default function MainTabNavigator() {
           } else if (route.name === 'Progress') {
             iconName = 'stats-chart';
           } else if (route.name === 'Generate') {
-            iconName = 'sparkles'; // Replace with the desired icon (e.g., Ionicons "sparkles" for AI)
+            iconName = 'sparkles';
           } else {
             iconName = 'help-circle';
           }

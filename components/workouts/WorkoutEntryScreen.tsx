@@ -8,7 +8,7 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
-import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
+import { CompositeNavigationProp, useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainTabParamList } from '../../navigation/MainTabNavigator';
 import { WorkoutStackParamList } from '../../navigation/WorkoutStackNavigator';
@@ -22,12 +22,17 @@ type WorkoutEntryNavigationProp = CompositeNavigationProp<
   NativeStackNavigationProp<MainTabParamList>
 >;
 
+type WorkoutEntryRouteProp = RouteProp<WorkoutStackParamList, 'WorkoutEntry'>;
+
 export default function WorkoutEntryScreen() {
   const navigation = useNavigation<WorkoutEntryNavigationProp>();
+  const route = useRoute<WorkoutEntryRouteProp>();
   const { user } = useAuth();
 
+  const { generatedWorkout } = route.params || {}; // Access generatedWorkout from params
+
   const [workoutName, setWorkoutName] = useState('');
-  const [exercises, setExercises] = useState<any[]>([]);
+  const [exercises, setExercises] = useState<any[]>(generatedWorkout || []); // Initialize with generatedWorkout
   const [exerciseType, setExerciseType] = useState('');
   const [duration, setDuration] = useState('');
   const [sets, setSets] = useState('');
@@ -120,7 +125,7 @@ export default function WorkoutEntryScreen() {
       Alert.alert('Error', exerciseError.message);
     } else {
       Alert.alert('Success', 'Workout saved successfully!');
-      navigation.goBack();
+      navigation.navigate('WorkoutList');
     }
   };
 
@@ -170,36 +175,38 @@ export default function WorkoutEntryScreen() {
         >
           <Ionicons name="arrow-back" size={24} color={colors.offWhite} />
         </TouchableOpacity>
-        <Text style={styles.headerText}>New Workout</Text>
+        <Text style={styles.headerText}>
+          {generatedWorkout ? 'AI-Generated Workout' : 'New Workout'}
+        </Text>
       </View>
       <TextInput
         placeholder="Workout Name"
         value={workoutName}
         onChangeText={setWorkoutName}
         style={[
-            styles.input,
-            !workoutName ? styles.requiredInput : {},
+          styles.input,
+          !workoutName ? styles.requiredInput : {},
         ]}
-        />
-        <TextInput
-        placeholder="Exercise Type"
-        value={exerciseType}
-        onChangeText={setExerciseType}
-        style={[
-            styles.input,
-            !exerciseType ? styles.requiredInput : {},
-        ]}
-        />
-        <TextInput
+      />
+      <TextInput
+      placeholder="Exercise Type"
+      value={exerciseType}
+      onChangeText={setExerciseType}
+      style={[
+        styles.input,
+        !exerciseType ? styles.requiredInput : {},
+      ]}
+      />
+      <TextInput
         placeholder="Sets Count"
         value={sets}
         onChangeText={setSets}
         keyboardType="numeric"
         style={[
-            styles.input,
-            !sets ? styles.requiredInput : {},
+          styles.input,
+          !sets ? styles.requiredInput : {},
         ]}
-        />
+      />
       <TouchableOpacity style={styles.addButton} onPress={addExercise}>
         <Text style={styles.addButtonText}>Add Exercise</Text>
       </TouchableOpacity>
@@ -221,6 +228,7 @@ export default function WorkoutEntryScreen() {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
