@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../components/HomeScreen';
 import WorkoutStackNavigator from './WorkoutStackNavigator';
 import ProgressScreen from '../components/progress/ProgressScreen';
+import AIWorkoutScreen from '../components/workouts/AIWorkoutScreen'; // Import your new screen
 import { NavigatorScreenParams } from '@react-navigation/native';
 import { WorkoutStackParamList } from './WorkoutStackNavigator';
 import { Ionicons } from '@expo/vector-icons'; // Install with: expo install @expo/vector-icons
@@ -12,6 +13,7 @@ export type MainTabParamList = {
   Home: undefined;
   Workouts: NavigatorScreenParams<WorkoutStackParamList>;
   Progress: undefined;
+  Generate: undefined; // Add the new route here
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -24,12 +26,15 @@ export default function MainTabNavigator() {
         tabBarIcon: ({ color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap;
 
+          // Assign icons based on route name
           if (route.name === 'Home') {
             iconName = 'home';
           } else if (route.name === 'Workouts') {
             iconName = 'barbell';
           } else if (route.name === 'Progress') {
             iconName = 'stats-chart';
+          } else if (route.name === 'Generate') {
+            iconName = 'sparkles'; // Replace with the desired icon (e.g., Ionicons "sparkles" for AI)
           } else {
             iconName = 'help-circle';
           }
@@ -42,13 +47,14 @@ export default function MainTabNavigator() {
           paddingBottom: 0, // Remove extra padding
           borderTopWidth: 0, // Remove border
         },
-        tabBarActiveTintColor: '#134074',
-        tabBarInactiveTintColor: '#8da9c4',
+        tabBarActiveTintColor: colors.darkNavy,
+        tabBarInactiveTintColor: colors.lightBlue,
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Workouts" component={WorkoutStackNavigator} />
       <Tab.Screen name="Progress" component={ProgressScreen} />
+      <Tab.Screen name="Generate" component={AIWorkoutScreen} />
     </Tab.Navigator>
   );
 }
