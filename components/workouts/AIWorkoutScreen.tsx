@@ -135,11 +135,16 @@ interface Exercise {
             parts: [
               {
                 text: `
-                    Generate a workout for the following user based on their workout history, workout focus, and exercise preferences:
+                    Generate a full workout for the following user based on their workout history, workout focus, and exercise preferences:
 
                     - Workout Focus: ${workoutFocus || 'None'}
                     - Exercise Preferences: ${exercisePreferences || 'None'}
                     - Workout History: ${JSON.stringify(workoutHistory)}
+
+                    Requirements:
+                    1. Include at least four exercises, even if no exercise preferences are provided.
+                    2. For each exercise, aim for slight progression compared to the user's workout history (e.g., increased weight, reps, or duration where appropriate).
+                    3. If no workout history is available, generate a balanced workout suitable for a general fitness goal.
 
                     Respond **only** with valid JSON in the following format:
                     [
@@ -216,6 +221,13 @@ interface Exercise {
       <View style={styles.header}>
         <Text style={styles.headerText}>Generate an AI Workout</Text>
       </View>
+
+      {/* Instructions */}
+        <View style={styles.instructionsContainer}>
+        <Text style={styles.instructionsText}>
+            Enter your preferences below, and AI will generate a personalized workout. It considers your preferences, workout focus, and past workout history to create a balanced, progressive routine. You can then create a new workout using the generated exercises.
+        </Text>
+        </View>
 
       {/* Input Fields */}
       <View style={styles.inputContainer}>
@@ -297,6 +309,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
+  instructionsContainer: {
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  instructionsText: {
+    fontSize: 14,
+    color: colors.darkNavy,
+    textAlign: 'left',
+    lineHeight: 20,
+  },  
   inputContainer: {
     marginBottom: 20,
   },
@@ -313,7 +335,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 25,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 2,
   },
   buttonText: {
     color: colors.offWhite,
@@ -349,7 +371,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 10,
   },
   createButtonText: {
     color: colors.offWhite,

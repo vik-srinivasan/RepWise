@@ -66,7 +66,7 @@ export default function ProgressScreen() {
     return {
       labels: reversedData.map((exercise) => {
         const date = new Date(exercise.created_at).toLocaleDateString(); // Format the created_at date
-        return `${exercise.set_number} - ${date}`; // Combine Set # and date
+        return `${date}`; // Combine Set # and date
       }),
       datasets: [
         {
