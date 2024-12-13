@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
+  Image,
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import colors from '../../styles/colors';
@@ -22,13 +23,19 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
     if (error) {
       setError(error.message);
     } else {
-      Alert.alert('Welcome!', 'Account created successfully.');
+      Alert.alert('Success!', 'Your account has been created.');
       navigation.navigate('Login');
     }
   };
 
   return (
     <View style={styles.container}>
+      {/* Logo */}
+      <Image
+        source={require('../../assets/images/logo.png')}
+        style={styles.logo}
+      />
+
       <Text style={styles.title}>Sign Up</Text>
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <TextInput
@@ -52,7 +59,7 @@ export default function SignUpScreen({ navigation }: { navigation: any }) {
         <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
       <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
-        Already have an account? <Text style={styles.linkText}>Log in</Text>
+        Already have an account? <Text style={styles.linkText}>Login</Text>
       </Text>
     </View>
   );
@@ -64,6 +71,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 16,
     backgroundColor: colors.offWhite,
+  },
+  logo: {
+    width: 150,
+    height: 150,
+    alignSelf: 'center',
+    marginBottom: 20,
+    marginTop: -50,
   },
   title: {
     fontSize: 24,

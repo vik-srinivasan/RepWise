@@ -1,101 +1,161 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
-import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+  ScrollView,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
+import { LineChart } from 'react-native-chart-kit';
 import colors from '../../styles/colors';
 import { supabase } from '../../services/supabaseClient';
 
 export default function ProgressScreen() {
   const [workoutData, setWorkoutData] = useState<any[]>([]);
+  const [selectedExercise, setSelectedExercise] = useState('');
   const screenWidth = Dimensions.get('window').width;
 
   useEffect(() => {
-    // Fetch workout data from Supabase
     const fetchWorkoutData = async () => {
       const { data, error } = await supabase
-        .from('workouts')
-        .select('*')
-        .order('date', { ascending: true });
+        .from('exercises')
+        .select('type, set_number, reps, weight, duration, workout_id')
+        .order('workout_id', { ascending: true })
+        .order('set_number', { ascending: true });
+
       if (error) {
         console.error(error);
       } else {
         setWorkoutData(data);
+        if (data.length > 0) {
+          setSelectedExercise(data[0].type); // Set default exercise
+        }
       }
     };
 
     fetchWorkoutData();
   }, []);
 
-  // Prepare data for charts
-  const lineChartData = {
-    labels: workoutData.map((w) => new Date(w.date).toLocaleDateString()),
-    datasets: [
-      {
-        data: workoutData.map((w) => w.duration),
-        color: () => colors.navy,
-      },
-    ],
-  };
+  // Get unique exercise types
+  const exerciseTypes = Array.from(new Set(workoutData.map((w) => w.type)));
 
-  const barChartData = {
-    labels: workoutData.map((w) => new Date(w.date).toLocaleDateString()),
-    datasets: [
-      {
-        data: workoutData.map((w) => w.sets),
-      },
-    ],
-  };
-
-  const workoutTypes = Array.from(
-    new Set(workoutData.map((w) => w.type))
+  // Filter data for the selected exercise
+  const filteredData = workoutData.filter(
+    (exercise) => exercise.type === selectedExercise
   );
 
-  const pieChartData = workoutTypes.map((type, index) => {
-    const count = workoutData.filter((w) => w.type === type).length;
+  // Function to generate chart data for weight/reps/duration
+  const lineChartData = (key: 'weight' | 'reps' | 'duration') => {
+    if (filteredData.length === 0) {
+      return {
+        labels: ['No Data'],
+        datasets: [
+          {
+            data: [0],
+            color: () => colors.navy,
+          },
+        ],
+      };
+    }
+  
     return {
-      name: type,
-      population: count,
-      color: index % 2 === 0 ? colors.lightBlue : colors.lighterNavy,
-      legendFontColor: colors.darkNavy,
-      legendFontSize: 15,
+      labels: filteredData.map((exercise) => `Set ${exercise.set_number}`),
+      datasets: [
+        {
+          data: filteredData.map((exercise) => {
+            const value = exercise[key];
+            return value !== null && value !== undefined ? value : 0; // Fallback to 0 for invalid values
+          }),
+          color: () => colors.navy,
+        },
+      ],
     };
-  });
-
+  };
+  
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Progress</Text>
       </View>
-      <View style={styles.content}>
-        <Text style={styles.chartTitle}>Workout Duration Over Time</Text>
-        <LineChart
-          data={lineChartData}
-          width={screenWidth - 32}
-          height={220}
-          chartConfig={chartConfig}
-          style={styles.chart}
-        />
 
-        <Text style={styles.chartTitle}>Sets Over Time</Text>
-        <BarChart
-          data={barChartData}
-          width={screenWidth - 32}
-          height={220}
-          yAxisLabel=""
-          yAxisSuffix=""
-          chartConfig={chartConfig}
-          style={styles.chart}
-        />
-        <Text style={styles.chartTitle}>Workout Types</Text>
-        <PieChart
-          data={pieChartData}
-          width={screenWidth - 32}
-          height={220}
-          chartConfig={chartConfig}
-          accessor="population"
-          backgroundColor="transparent"
-          paddingLeft="15"
-          style={styles.chart}
-        />
+      {/* Exercise Filter */}
+      <FlatList
+        data={exerciseTypes}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={[
+              styles.filterButton,
+              selectedExercise === item && styles.filterButtonActive,
+            ]}
+            onPress={() => setSelectedExercise(item)}
+          >
+            <Text
+              style={[
+                styles.filterButtonText,
+                selectedExercise === item && styles.filterButtonTextActive,
+              ]}
+            >
+              {item}
+            </Text>
+          </TouchableOpacity>
+        )}
+        contentContainerStyle={styles.filterContainer}
+      />
+
+      {/* Weight Over Time */}
+      <View style={styles.chartContainer}>
+        <Text style={styles.chartTitle}>Weight Over Time</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator style={styles.scrollableChartContainer}>
+          <View style={[styles.chartBackground, { width: Math.max(screenWidth, filteredData.length * 100) }]}>
+            <LineChart
+              data={lineChartData('weight')}
+              width={Math.max(screenWidth, filteredData.length * 100)} // Dynamically scale width
+              height={220}
+              chartConfig={chartConfig}
+              bezier
+              style={styles.chart}
+            />
+          </View>
+        </ScrollView>
+      </View>
+
+      {/* Reps Over Time */}
+      <View style={styles.chartContainer}>
+        <Text style={styles.chartTitle}>Reps Over Time</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator style={styles.scrollableChartContainer}>
+          <View style={[styles.chartBackground, { width: Math.max(screenWidth, filteredData.length * 100) }]}>
+            <LineChart
+              data={lineChartData('reps')}
+              width={Math.max(screenWidth, filteredData.length * 100)}
+              height={220}
+              chartConfig={chartConfig}
+              bezier
+              style={styles.chart}
+            />
+          </View>
+        </ScrollView>
+      </View>
+
+      {/* Duration Over Time */}
+      <View style={styles.chartContainer}>
+        <Text style={styles.chartTitle}>Duration Over Time</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator style={styles.scrollableChartContainer}>
+          <View style={[styles.chartBackground, { width: Math.max(screenWidth, filteredData.length * 100) }]}>
+            <LineChart
+              data={lineChartData('duration')}
+              width={Math.max(screenWidth, filteredData.length * 100)}
+              height={220}
+              chartConfig={chartConfig}
+              bezier
+              style={styles.chart}
+            />
+          </View>
+        </ScrollView>
       </View>
     </ScrollView>
   );
@@ -130,17 +190,52 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
-  content: {
+  filterContainer: {
+    marginVertical: 16,
+    paddingHorizontal: 8,
+  },
+  filterButton: {
+    backgroundColor: colors.lightBlue,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    marginHorizontal: 8,
+  },
+  filterButtonActive: {
+    backgroundColor: colors.navy,
+  },
+  filterButtonText: {
+    fontSize: 14,
+    color: colors.darkNavy,
+  },
+  filterButtonTextActive: {
+    color: colors.offWhite,
+    fontWeight: 'bold',
+  },
+  chartContainer: {
+    marginBottom: 16,
     padding: 16,
+    backgroundColor: colors.lightBlue,
+    borderRadius: 8,
   },
   chartTitle: {
-    color: colors.darkNavy,
     fontSize: 18,
     fontWeight: 'bold',
-    marginVertical: 8,
+    color: colors.darkNavy,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  scrollableChartContainer: {
+    flex: 1,
+    backgroundColor: colors.lightBlue, // Ensures the background of the scroll area matches
+    borderRadius: 8, // Matches the chart's rounded corners
+  },
+  chartBackground: {
+    backgroundColor: colors.lightBlue, // Ensures consistent background behind the chart
+    justifyContent: 'center',
+    borderRadius: 8, // Matches the chart container's border radius
   },
   chart: {
-    marginVertical: 8,
     borderRadius: 16,
   },
 });

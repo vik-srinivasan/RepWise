@@ -1,28 +1,36 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import colors from '../styles/colors';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigation } from '@react-navigation/native';
 
 export default function HomeScreen({ navigation }: { navigation: any }) {
   const { user, signOut } = useAuth();
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      {/* Header Section */}
+      <View style={styles.headerContainer}>
         <Text style={styles.headerText}>Welcome back, {user?.email}!</Text>
       </View>
-      <View style={styles.quickActions}>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => {
-            navigation.navigate('Workouts', {
-            screen: 'WorkoutEntry', // Navigate to the WorkoutEntry screen within Workouts
-            });
-        }}
+
+      {/* Logo Section */}
+      <View style={styles.logoContainer}>
+        <Image
+          source={require('../assets/images/logo.png')}
+          style={styles.logo}
+        />
+      </View>
+
+      {/* Quick Actions Section */}
+      <View style={styles.quickActionsContainer}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() =>
+            navigation.navigate('Workouts', { screen: 'WorkoutEntry' })
+          }
         >
-        <Text style={styles.buttonText}>Log a Workout</Text>
-      </TouchableOpacity>
+          <Text style={styles.buttonText}>Log a Workout</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate('Progress')}
@@ -30,14 +38,20 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
           <Text style={styles.buttonText}>View Progress</Text>
         </TouchableOpacity>
       </View>
-      <View style={styles.motivationalQuote}>
+
+      {/* Motivational Quote Section */}
+      <View style={styles.quoteContainer}>
         <Text style={styles.quoteText}>
           "The secret of getting ahead is getting started."
         </Text>
       </View>
-      <TouchableOpacity onPress={signOut}>
-        <Text style={styles.signOutText}>Sign Out</Text>
-      </TouchableOpacity>
+
+      {/* Sign Out Section */}
+      <View style={styles.signOutContainer}>
+        <TouchableOpacity onPress={signOut}>
+          <Text style={styles.signOutText}>Sign Out</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -48,10 +62,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.offWhite,
     padding: 16,
   },
-  header: {
+  headerContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
     backgroundColor: colors.lighterNavy,
     padding: 20,
-    alignItems: 'center',
+    borderRadius: 8,
   },
   headerText: {
     color: colors.offWhite,
@@ -59,9 +75,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
-  quickActions: {
-    marginTop: 30,
+  logoContainer: {
     alignItems: 'center',
+    marginVertical: 20,
+  },
+  logo: {
+    width: 150,
+    height: 150,
+    resizeMode: 'contain',
+  },
+  quickActionsContainer: {
+    marginVertical: 20,
   },
   button: {
     backgroundColor: colors.navy,
@@ -69,13 +93,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
     borderRadius: 25,
     marginVertical: 10,
+    alignItems: 'center',
   },
   buttonText: {
     color: colors.offWhite,
     fontSize: 18,
+    fontWeight: 'bold',
   },
-  motivationalQuote: {
-    marginTop: 50,
+  quoteContainer: {
+    marginVertical: 30,
     paddingHorizontal: 20,
   },
   quoteText: {
@@ -84,10 +110,13 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
   },
+  signOutContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
   signOutText: {
     color: colors.navy,
-    textAlign: 'center',
-    marginTop: 30,
+    fontSize: 16,
     textDecorationLine: 'underline',
   },
 });
