@@ -20,24 +20,52 @@ type WorkoutListScreenNavigationProp = NativeStackNavigationProp<
 
 export default function WorkoutListScreen() {
   const navigation = useNavigation<WorkoutListScreenNavigationProp>();
-  const { user } = useAuth(); // Fetch authenticated user
+  const { user } = useAuth();
   const [workouts, setWorkouts] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) return;
 
-    // Fetch workouts for the current user
     const fetchWorkouts = async () => {
       const { data, error } = await supabase
         .from('workouts')
-        .select('*')
-        .eq('user_id', user.id) // Filter by user_id
+        .select('id, name, date, exercises(id, type, set_number, reps, weight, duration)')
+        .eq('user_id', user.id)
         .order('date', { ascending: false });
 
       if (error) {
         console.error(error);
       } else {
-        setWorkouts(data || []);
+        // Group exercises by type
+        const groupedWorkouts = data.map((workout: any) => ({
+          ...workout,
+          exercises: workout.exercises.reduce((grouped: any[], exercise: any) => {
+            const existingExercise = grouped.find((e: any) => e.type === exercise.type);
+            if (existingExercise) {
+              existingExercise.sets.push({
+                set_number: exercise.set_number,
+                reps: exercise.reps,
+                weight: exercise.weight,
+                duration: exercise.duration,
+              });
+            } else {
+              grouped.push({
+                type: exercise.type,
+                sets: [
+                  {
+                    set_number: exercise.set_number,
+                    reps: exercise.reps,
+                    weight: exercise.weight,
+                    duration: exercise.duration,
+                  },
+                ],
+              });
+            }
+            return grouped;
+          }, []),
+        }));
+
+        setWorkouts(groupedWorkouts);
       }
     };
 
@@ -46,13 +74,21 @@ export default function WorkoutListScreen() {
 
   const renderItem = ({ item }: { item: any }) => (
     <View style={styles.card}>
-      <Text style={styles.cardTitle}>{item.type}</Text>
-      <Text style={styles.cardText}>Duration: {item.duration} minutes</Text>
-      <Text style={styles.cardText}>
-        {item.sets && item.reps
-          ? `Sets: ${item.sets}, Reps: ${item.reps}`
-          : 'No sets/reps recorded'}
-      </Text>
+      <Text style={styles.cardTitle}>{item.name}</Text>
+      {item.exercises.length > 0 ? (
+        item.exercises.map((exercise: any, index: number) => (
+          <View key={index} style={styles.exerciseContainer}>
+            <Text style={styles.exerciseTitle}>{exercise.type}</Text>
+            {exercise.sets.map((set: any, setIndex: number) => (
+              <Text key={setIndex} style={styles.setDetails}>
+                Set {set.set_number}: {set.reps || 0} reps, {set.weight || 0} lbs, {set.duration || 0} mins
+              </Text>
+            ))}
+          </View>
+        ))
+      ) : (
+        <Text style={styles.cardText}>No exercises recorded</Text>
+      )}
       <Text style={styles.cardDate}>
         {new Date(item.date).toLocaleDateString()}
       </Text>
@@ -67,7 +103,7 @@ export default function WorkoutListScreen() {
       <FlatList
         data={workouts}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.list}
       />
       <TouchableOpacity
@@ -110,10 +146,18 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
-  cardText: {
+  exerciseContainer: {
+    marginTop: 8,
+  },
+  exerciseTitle: {
     color: colors.darkNavy,
     fontSize: 16,
-    marginTop: 4,
+    fontWeight: 'bold',
+  },
+  setDetails: {
+    color: colors.navy,
+    fontSize: 14,
+    marginLeft: 16,
   },
   cardDate: {
     color: colors.navy,
@@ -136,5 +180,10 @@ const styles = StyleSheet.create({
     color: colors.offWhite,
     fontSize: 30,
     lineHeight: 30,
+  },
+  cardText: {
+    color: colors.navy,
+    fontSize: 16,
+    marginTop: 8,
   },
 });
