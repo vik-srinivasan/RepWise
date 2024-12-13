@@ -20,10 +20,11 @@ export default function ProgressScreen() {
 
   const fetchWorkoutData = async () => {
     const { data, error } = await supabase
-      .from('exercises')
-      .select('type, set_number, reps, weight, duration, workout_id')
-      .order('workout_id', { ascending: true })
-      .order('set_number', { ascending: true });
+        .from('exercises')
+        .select('type, set_number, reps, weight, duration, workout_id, created_at')
+        .order('workout_id', { ascending: true })
+        .order('set_number', { ascending: true });
+  
 
     if (error) {
       console.error(error);
@@ -58,12 +59,18 @@ export default function ProgressScreen() {
         ],
       };
     }
-
+  
+    // Reverse the filtered data to show the most recent sets first
+    const reversedData = [...filteredData].reverse();
+  
     return {
-      labels: filteredData.map((exercise) => `Set ${exercise.set_number}`),
+      labels: reversedData.map((exercise) => {
+        const date = new Date(exercise.created_at).toLocaleDateString(); // Format the created_at date
+        return `${exercise.set_number} - ${date}`; // Combine Set # and date
+      }),
       datasets: [
         {
-          data: filteredData.map((exercise) => {
+          data: reversedData.map((exercise) => {
             const value = exercise[key];
             return value !== null && value !== undefined ? value : 0;
           }),
@@ -72,6 +79,7 @@ export default function ProgressScreen() {
       ],
     };
   };
+  
 
   return (
     <ScrollView style={styles.container}>
@@ -254,13 +262,13 @@ const styles = StyleSheet.create({
   },
   scrollableChartContainer: {
     flex: 1,
-    backgroundColor: colors.lightBlue, // Ensures the background of the scroll area matches
-    borderRadius: 8, // Matches the chart's rounded corners
+    backgroundColor: colors.lightBlue,
+    borderRadius: 8,
   },
   chartBackground: {
-    backgroundColor: colors.offWhite, // Ensures consistent background behind the chart
+    backgroundColor: colors.offWhite,
     justifyContent: 'center',
-    borderRadius: 8, // Matches the chart container's border radius
+    borderRadius: 8,
   },
   chart: {
     borderRadius: 16,
