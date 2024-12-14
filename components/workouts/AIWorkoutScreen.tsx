@@ -14,6 +14,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainTabParamList } from '../../navigation/MainTabNavigator';
 
+
 type AIWorkoutNavigationProp = NativeStackNavigationProp<
   MainTabParamList,
   'Generate'
@@ -179,7 +180,7 @@ interface Exercise {
   
       // Call Gemini API
       const response = await fetch(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyCMkMf6t8oDriwGPZ_evA4CY7KavAYwpAs',
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyCMkMf6t8oDriwGPZ_evA4CY7KavAYwpAs`,
         {
           method: 'POST',
           headers: {
