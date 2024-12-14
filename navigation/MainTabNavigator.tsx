@@ -13,7 +13,7 @@ export type MainTabParamList = {
   Home: undefined;
   Workouts: NavigatorScreenParams<WorkoutStackParamList>;
   Progress: undefined;
-  Generate: undefined; // Add the new route here
+  Generate: { triggerGenerate?: boolean }; // Add the new route here
 };
 
 const Tab = createBottomTabNavigator<MainTabParamList>();

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import colors from '../../styles/colors';
 import { supabase } from '../../services/supabaseClient';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainTabParamList } from '../../navigation/MainTabNavigator';
 
@@ -19,6 +19,7 @@ type AIWorkoutNavigationProp = NativeStackNavigationProp<
   'Generate'
 >;
 
+type AIWorkoutRouteProp = RouteProp<MainTabParamList, 'Generate'>;
 
 const parseGeneratedWorkout = (rawContent: string): any[] => {
     try {
@@ -34,10 +35,19 @@ const parseGeneratedWorkout = (rawContent: string): any[] => {
 
 export default function AIWorkoutScreen() {
     const navigation = useNavigation<AIWorkoutNavigationProp>();
+    const route = useRoute<AIWorkoutRouteProp>();
     const [workoutFocus, setWorkoutFocus] = useState('');
     const [exercisePreferences, setExercisePreferences] = useState('');
     const [generatedWorkout, setGeneratedWorkout] = useState<any>(null);
     const [loading, setLoading] = useState(false); // Loading state
+
+    const triggerGenerate = route.params?.triggerGenerate ?? false; // Check if auto-generate is triggered
+
+    useEffect(() => {
+      if (triggerGenerate) {
+        generateWorkout(); // Trigger generation on load
+      }
+    }, [triggerGenerate]);
 
 // Interfaces for fetched data
 interface Exercise {
@@ -142,7 +152,7 @@ interface Exercise {
                     - Workout History: ${JSON.stringify(workoutHistory)}
 
                     Requirements:
-                    1. Include at least four exercises, even if no exercise preferences are provided.
+                    1. Include 3-6 exercises, even if no exercise preferences are provided.
                     2. For each exercise, aim for slight progression compared to the user's workout history (e.g., increased weight, reps, or duration where appropriate).
                     3. If no workout history is available, generate a balanced workout suitable for a general fitness goal.
 
@@ -278,7 +288,7 @@ interface Exercise {
             onPress={() =>
                 navigation.navigate('Workouts', {
                 screen: 'WorkoutEntry',
-                params: { generatedWorkout },
+                params: { generatedWorkout, workoutFocus },
                 })
             }
             >

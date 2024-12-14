@@ -37,6 +37,15 @@ export default function HomeScreen({ navigation }: { navigation: any }) {
         >
           <Text style={styles.buttonText}>View Progress</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() =>
+            navigation.navigate('Generate', { triggerGenerate: true }) // Pass triggerGenerate parameter
+          }
+        >
+          <Text style={styles.buttonText}>Generate a Workout</Text>
+        </TouchableOpacity>
+
       </View>
 
       {/* Motivational Quote Section */}

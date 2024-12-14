@@ -29,9 +29,9 @@ export default function WorkoutEntryScreen() {
   const route = useRoute<WorkoutEntryRouteProp>();
   const { user } = useAuth();
 
-  const { generatedWorkout } = route.params || {}; // Access generatedWorkout from params
+  const { generatedWorkout, workoutFocus } = route.params || {}; // Access parameters
 
-  const [workoutName, setWorkoutName] = useState('');
+  const [workoutName, setWorkoutName] = useState(workoutFocus || ''); // Use workoutFocus as default
   const [exercises, setExercises] = useState<any[]>(generatedWorkout || []); // Initialize with generatedWorkout
   const [exerciseType, setExerciseType] = useState('');
   const [duration, setDuration] = useState('');

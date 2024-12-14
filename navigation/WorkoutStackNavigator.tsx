@@ -4,10 +4,15 @@ import WorkoutListScreen from '../components/workouts/WorkoutListScreen';
 import WorkoutEntryScreen from '../components/workouts/WorkoutEntryScreen';
 
 export type WorkoutStackParamList = {
-    WorkoutList: undefined;
-    WorkoutEntry: { generatedWorkout?: any }; 
-    AIWorkout: undefined;
+  WorkoutList: undefined;
+  WorkoutEntry: { 
+    generatedWorkout?: any; 
+    workoutFocus?: string; 
+  }; 
+  AIWorkout: { 
+    triggerGenerate?: boolean; // Add this parameter for auto-generation
   };
+};
 
 const Stack = createNativeStackNavigator<WorkoutStackParamList>();
 
